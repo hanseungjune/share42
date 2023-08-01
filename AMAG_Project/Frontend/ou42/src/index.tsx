@@ -8,10 +8,9 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-
 // Initialize Firebase
-export const app = initializeApp(firebaseConfig);
-export const db = getFirestore();
+// export const app = initializeApp(firebaseConfig);
+// export const db = getFirestore();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,6 +27,11 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+if (process.env.NODE_ENV === "development") {
+  const { worker } = require("./mocks/browser");
+  worker.start();
+}
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement

@@ -13,7 +13,7 @@ import {
   Timestamp,
   updateDoc,
 } from "firebase/firestore";
-import { db } from "../..";
+// import { db } from "../..";
 import { useParams, useLocation } from "react-router-dom";
 import { v4 as uuid } from "uuid";
 
@@ -55,14 +55,14 @@ export default function UserChat() {
   const { userId } = JSON.parse(loginObject);
   const { state } = useLocation();
   console.log(state);
-  useEffect(() => {
-    const unSub = onSnapshot(doc(db, "chats", chatName), (doc: any) => {
-      doc.exists() && setMessages(doc.data().messages);
-    });
-    return () => {
-      unSub();
-    };
-  }, []);
+  // useEffect(() => {
+  //   const unSub = onSnapshot(doc(db, "chats", chatName), (doc: any) => {
+  //     doc.exists() && setMessages(doc.data().messages);
+  //   });
+  //   return () => {
+  //     unSub();
+  //   };
+  // }, []);
 
   const handleMsg = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -70,41 +70,41 @@ export default function UserChat() {
     setMsg(e.target.value);
   };
 
-  const handleSend = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    console.log("호출됨");
+  // const handleSend = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  //   e.preventDefault();
+  //   console.log("호출됨");
 
-    if (e.code === "Enter") {
-      send();
-    }
-  };
+  //   if (e.code === "Enter") {
+  //     send();
+  //   }
+  // };
 
-  const send = async () => {
-    await updateDoc(doc(db, "chats", chatName), {
-      messages: arrayUnion({
-        id: uuid(),
-        msg,
-        senderId: userId,
-        date: Timestamp.now(),
-      }),
-    });
+  // const send = async () => {
+  //   await updateDoc(doc(db, "chats", chatName), {
+  //     messages: arrayUnion({
+  //       id: uuid(),
+  //       msg,
+  //       senderId: userId,
+  //       date: Timestamp.now(),
+  //     }),
+  //   });
 
-    setMsg("");
+  //   setMsg("");
 
-    await updateDoc(doc(db, "userChats", userId), {
-      [chatName + ".lastMessage"]: {
-        msg,
-      },
-      [chatName + ".date"]: serverTimestamp(),
-    });
+  //   await updateDoc(doc(db, "userChats", userId), {
+  //     [chatName + ".lastMessage"]: {
+  //       msg,
+  //     },
+  //     [chatName + ".date"]: serverTimestamp(),
+  //   });
 
-    await updateDoc(doc(db, "userChats", state.nickName), {
-      [chatName + ".lastMessage"]: {
-        msg,
-      },
-      [chatName + ".date"]: serverTimestamp(),
-    });
-  };
+  //   await updateDoc(doc(db, "userChats", state.nickName), {
+  //     [chatName + ".lastMessage"]: {
+  //       msg,
+  //     },
+  //     [chatName + ".date"]: serverTimestamp(),
+  //   });
+  // };
   return (
     <div css={container}>
       <div className="chatSection">
@@ -117,7 +117,7 @@ export default function UserChat() {
           placeholder="메세지를 입력해 주세요"
           onChange={handleMsg}
           className="sendField"
-          onKeyPress={handleSend}
+          // onKeyPress={handleSend}
         />
         <RiSendPlaneFill
           // onClick={(e) => send()}

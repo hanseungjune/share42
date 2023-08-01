@@ -7,7 +7,7 @@ import { useQuery } from "react-query";
 import { useApi } from "../../../hooks/useApi";
 import { useGetUserToken } from "../../../hooks/useGetToken";
 import { doc, getDoc } from "@firebase/firestore";
-import { db } from "../../..";
+// import { db } from "../../..";
 
 const container = css`
   width: 100%;
@@ -62,14 +62,14 @@ export default function ChatListDetail({ data }: any) {
   };
   const URL = `https://www.share42-together.com/api/user/info/chat/user-img/${otherUserProfile}`;
   const getUserProfile = useApi("get", URL, options);
-  useEffect(() => {
-    (async () => {
-      const otherUser: any = await getDoc(
-        doc(db, "users", data[1]?.userInfo?.id)
-      );
-      setOtherUserProfile(otherUser.data().profile);
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async () => {
+  //     const otherUser: any = await getDoc(
+  //       doc(db, "users", data[1]?.userInfo?.id)
+  //     );
+  //     setOtherUserProfile(otherUser.data().profile);
+  //   })();
+  // }, []);
 
   useQuery(["getUserProfile", otherUserProfile], getUserProfile, {
     select: (res) => res,

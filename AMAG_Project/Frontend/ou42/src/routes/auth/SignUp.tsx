@@ -13,7 +13,7 @@ import { useApi } from "../../hooks/useApi";
 import Alert from "../../components/UI/Alert";
 import { useNavigate } from "react-router-dom";
 import { doc, setDoc } from "firebase/firestore";
-import { db } from "../..";
+// import { db } from "../..";
 
 const URL = `https://www.share42-together.com/api/join`;
 
@@ -79,43 +79,43 @@ export default function SignUp() {
       address: `${si} ${goon} ${dong} ${addrDetail}`,
     },
   };
-  const submitSignUp = useApi("post", URL, options);
+  // const submitSignUp = useApi("post", URL, options);
   // 회원가입 버튼 클릭시
-  const submit = () => {
-    if (
-      id &&
-      pd &&
-      name &&
-      nickName &&
-      phoneNumber &&
-      birth &&
-      si &&
-      goon &&
-      dong &&
-      addrDetail
-    ) {
-      submitSignUp()
-        .then((res) => {
-          setDoc(doc(db, "users", id), {
-            id,
-            phoneNumber,
-            nickName,
-            profile: "",
-          })
-            .then(() => {
-              setDoc(doc(db, "userChats", id), {}).then(() => {
-                Alert("success", "회원가입이 완료되었습니다", () =>
-                  navigate("/home")
-                );
-              });
-            })
-            .catch();
-        })
-        .catch((err) => Alert("error", err.response.data.message));
-    } else {
-      Alert("error", "모든 항목을 올바르게 채워 주세요");
-    }
-  };
+  // const submit = () => {
+  //   if (
+  //     id &&
+  //     pd &&
+  //     name &&
+  //     nickName &&
+  //     phoneNumber &&
+  //     birth &&
+  //     si &&
+  //     goon &&
+  //     dong &&
+  //     addrDetail
+  //   ) {
+  //     submitSignUp()
+  //       .then((res) => {
+  //         setDoc(doc(db, "users", id), {
+  //           id,
+  //           phoneNumber,
+  //           nickName,
+  //           profile: "",
+  //         })
+  //           .then(() => {
+  //             setDoc(doc(db, "userChats", id), {}).then(() => {
+  //               Alert("success", "회원가입이 완료되었습니다", () =>
+  //                 navigate("/home")
+  //               );
+  //             });
+  //           })
+  //           .catch();
+  //       })
+  //       .catch((err) => Alert("error", err.response.data.message));
+  //   } else {
+  //     Alert("error", "모든 항목을 올바르게 채워 주세요");
+  //   }
+  // };
 
   // const submitSignUp = useApi("post");
   return (
@@ -146,7 +146,7 @@ export default function SignUp() {
             width={"100px"}
             height={"40px"}
             content={"회원가입"}
-            onClick={submit}
+            // onClick={submit}
             backGroundColor={"#ffabab"}
             color={"white"}
             border={"0"}

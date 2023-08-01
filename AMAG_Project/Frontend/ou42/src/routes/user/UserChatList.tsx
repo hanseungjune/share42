@@ -5,7 +5,7 @@ import ChatListDetail from "../../components/user/chat/ChatListDetail";
 import { useApi } from "../../hooks/useApi";
 import { useEffect, useState } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "../..";
+// import { db } from "../..";
 import navStore from "../../store/navStore";
 
 const container = css`
@@ -36,18 +36,18 @@ export default function UserChatList() {
   const loginObject = localStorage.getItem("loginInfo");
   const { userId } = loginObject ? JSON.parse(loginObject) : null;
 
-  useEffect(() => {
-    setPathTitle("채팅");
-    const getChats = () => {
-      const unsub = onSnapshot(doc(db, "userChats", userId), (doc) => {
-        setChats(doc.data());
-      });
-      return () => {
-        unsub();
-      };
-    };
-    userId && getChats();
-  }, [userId]);
+  // useEffect(() => {
+  //   setPathTitle("채팅");
+  //   const getChats = () => {
+  //     const unsub = onSnapshot(doc(db, "userChats", userId), (doc) => {
+  //       setChats(doc.data());
+  //     });
+  //     return () => {
+  //       unsub();
+  //     };
+  //   };
+  //   userId && getChats();
+  // }, [userId]);
   return (
     <div css={container}>
       {!chats || chats.length > 0 ? (
