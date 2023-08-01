@@ -1,6 +1,5 @@
 /* eslint-disable max-len */
 /** @jsxImportSource @emotion/react */
-
 import {
   memo,
   Suspense,
@@ -19,7 +18,7 @@ import BottomMenuBar from "../../components/BottomMenuBar";
 import DropDown from "../../components/UI/DropDown";
 import Loading from "../../components/Loading";
 import pinkBox from "../../assets/pinkBox.png";
-import { Data,  Props } from "../../type/UserHome";
+import { Data, Props } from "../../type/UserHome";
 import { UserHomeFetcher } from "../../components/user/UserHomeFetcher";
 import { useLikeMutation } from "../../hooks/useLikeMutation";
 import { useIntersectionObserver } from "../../hooks/useIntersectionObserver";
@@ -30,8 +29,9 @@ function UserHomeList(props: Partial<Props>) {
   const divRef = useRef<HTMLDivElement | any>({});
   const ImgUrl = process.env.REACT_APP_IMAGE_URL;
   const navigate = useNavigate();
-  
+
   const { like } = useLikeMutation();
+
   const { observeElement } = useIntersectionObserver(
     fetchNextPage,
     hasNextPage
@@ -200,9 +200,9 @@ function UserHome() {
         <div className="container">
           <ErrorBoundary fallback={ErrorMessage}>
             <Suspense fallback={<Loading />}>
-              <MemoUserHomeFetcher sortNum={sortNum}>
+              {/* <MemoUserHomeFetcher sortNum={sortNum}>
                 <MemoUserHomeList />
-              </MemoUserHomeFetcher>
+              </MemoUserHomeFetcher> */}
             </Suspense>
           </ErrorBoundary>
         </div>
@@ -213,6 +213,6 @@ function UserHome() {
 }
 
 const MemoUserHomeList = memo(UserHomeList);
-const MemoUserHomeFetcher = memo(UserHomeFetcher);
+// const MemoUserHomeFetcher = memo(UserHomeFetcher);
 
 export default UserHome;

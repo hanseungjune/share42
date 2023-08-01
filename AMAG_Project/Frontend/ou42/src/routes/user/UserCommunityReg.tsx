@@ -11,6 +11,7 @@ import UserCommunityRegTitle from "../../components/community/UserCommunityRegTi
 import { useLocation, useNavigate } from "react-router";
 import UserCommunityRegSubmit from "../../components/community/UserCommunityRegSubmit";
 import swal from "sweetalert";
+import { TokenStorage } from "../../hooks/tokenStorage";
 
 export const CategorySelectStyle = css`
   select {
@@ -54,9 +55,9 @@ export interface SubmitDataType {
   content: string;
 }
 
+const tokenStorage = new TokenStorage();
 const UserCommunityReg = () => {
-  const loginObject = localStorage.getItem("loginInfo");
-  const { token } = loginObject ? JSON.parse(loginObject) : null;
+  const token = tokenStorage.getToken();
   const navigate = useNavigate();
   const { state } = useLocation();
   const [title, setTitle] = useState<string>(

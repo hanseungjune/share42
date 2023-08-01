@@ -141,25 +141,25 @@ export default function HomeNavBar() {
   }, [isScroll]);
 
   // 사용자 정보 받는 API 함수
-  const userInfo = () => {
-    return axios({
-      method: "get",
-      url: `https://www.share42-together.com/api/user/info`,
-      headers: {
-        Authorization: `Bearer ${TOKEN}`,
-      },
-    });
-  };
+  // const userInfo = () => {
+  //   return axios({
+  //     method: "get",
+  //     url: `https://www.share42-together.com/api/user/info`,
+  //     headers: {
+  //       Authorization: `Bearer ${TOKEN}`,
+  //     },
+  //   });
+  // };
 
   // 사용자 정보 받는 query
-  const { data } = useQuery(["user-info"], userInfo, {
-    suspense: false,
-    cacheTime: 1000 * 60 * 30,
-    staleTime: 1000 * 60 * 30,
-    select: (data) => {
-      return data.data.message;
-    },
-  });
+  // const { data } = useQuery(["user-info"], userInfo, {
+  //   suspense: false,
+  //   cacheTime: 1000 * 60 * 30,
+  //   staleTime: 1000 * 60 * 30,
+  //   select: (data) => {
+  //     return data.data.message;
+  //   },
+  // });
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const searchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -183,7 +183,7 @@ export default function HomeNavBar() {
       <div css={homeNavStyle(isScroll)}>
         {/* 최상위 */}
         <div className="top">
-          <p>{data?.dong}</p>
+          {/* <p>{data?.dong}</p> */}
           <SlBell size={23} className="bell" />
         </div>
 

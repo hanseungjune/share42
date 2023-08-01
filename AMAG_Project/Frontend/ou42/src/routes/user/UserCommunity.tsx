@@ -10,6 +10,7 @@ import UserCommunityPosts from "../../components/community/UserCommunityPosts";
 import UserCommunityBottomBar from "../../components/community/UserCommunityBottomBar";
 import { getTimeAgo } from "../../utils/getTimeAgo";
 import { L, pipe, takeAll } from "../../custom/FxJS";
+import { TokenStorage } from './../../hooks/tokenStorage';
 
 export const UserCommunityBtnStyle = css`
   & > .sort-button-news,
@@ -59,6 +60,7 @@ const sortArray = [
   { idx: 5, num: 0, title: "모든", category: "all" },
 ];
 
+const tokenStorage = new TokenStorage();
 const UserCommunity = () => {
   const [recent, setRecent] = useState<boolean>(false);
   const [popular, setPopular] = useState<boolean>(false);
@@ -79,68 +81,48 @@ const UserCommunity = () => {
   });
   const { search } = communityStore();
   const divRef = useRef<HTMLDivElement | any>({});
-  const loginObject = localStorage.getItem("loginInfo");
-  const { token } = loginObject ? JSON.parse(loginObject) : null;
+  const token = tokenStorage.getToken();
 
-  const SORT_API = (sort: any, category: any, page: number) => {
-    // eslint-disable-next-line max-len
-    return `https://www.share42-together.com/api/user/community/posts/list?page=${page}&size=${SIZE}&sort=${sort}&category=${category.num}`;
-  };
-
-  const SEARCH_API = (sort: any, category: any, search: any, page: number) => {
-    // eslint-disable-next-line max-len
-    return `https://www.share42-together.com/api/user/community/posts/list?page=${page}&size=${SIZE}&sort=${sort}&category=${category.num}&search=${search}`;
-  };
-
-  // API 요청
-  // const fetchRepositories = async (page: number = 1) => {
-  //   const response = await axios({
-  //     method: "GET",
-  // url: search
-  //   ? SEARCH_API(sort, category, search, page)
-  //   : SORT_API(sort, category, page),
-  // headers: {
-  //   "Content-Type": "application/json",
-  //   Authorization: `Bearer ${token}`,
-  // },
-  //   });
-
-  //   return response.data.message;
+  // const SORT_API = (sort: any, category: any, page: number) => {
+  //   return `https://www.share42-together.com/api/user/community/posts/list?page=${page}&size=${SIZE}&sort=${sort}&category=${category.num}`;
   // };
 
-  const fetchRepositories = ({ pageParam = 1 }) => {
-    return axios({
-      method: "get",
-      url: search
-        ? SEARCH_API(sort, category, search, pageParam)
-        : SORT_API(sort, category, pageParam),
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-  };
+  // const SEARCH_API = (sort: any, category: any, search: any, page: number) => {
+  //   return `https://www.share42-together.com/api/user/community/posts/list?page=${page}&size=${SIZE}&sort=${sort}&category=${category.num}&search=${search}`;
+  // };
 
-  const { data, hasNextPage, fetchNextPage } = useInfiniteQuery(
-    ["getCommunity", sort, category, search],
-    fetchRepositories,
-    {
-      getNextPageParam: (lastPage, allPages: any) => {
-        if (allPages[0].data.message.totalPages > allPages.length) {
-          return allPages.length + 1;
-        }
-      },
-      select: (data) => {
-        const newData = pipe(L.map, L.flatten, takeAll);
+  // const fetchRepositories = ({ pageParam = 1 }) => {
+  //   return axios({
+  //     method: "get",
+  //     url: search
+  //       ? SEARCH_API(sort, category, search, pageParam)
+  //       : SORT_API(sort, category, pageParam),
+  //     headers: {
+  //       Authorization: `Bearer ${token}`,
+  //     },
+  //   });
+  // };
 
-        return {
-          pages: newData((d: any) => d.data.message.content, data.pages),
-          // pages: data.pages,
-          pageParams: data?.pageParams,
-        };
-      },
-      suspense: false,
-    }
-  );
+  // const { data, hasNextPage, fetchNextPage } = useInfiniteQuery(
+  //   ["getCommunity", sort, category, search],
+  //   fetchRepositories,
+  //   {
+  //     getNextPageParam: (lastPage, allPages: any) => {
+  //       if (allPages[0].data.message.totalPages > allPages.length) {
+  //         return allPages.length + 1;
+  //       }
+  //     },
+  //     select: (data) => {
+  //       const newData = pipe(L.map, L.flatten, takeAll);
+
+  //       return {
+  //         pages: newData((d: any) => d.data.message.content, data.pages),
+  //         pageParams: data?.pageParams,
+  //       };
+  //     },
+  //     suspense: false,
+  //   }
+  // );
 
   // 정렬 요청
   const handleCommunitySort = (
@@ -211,13 +193,13 @@ const UserCommunity = () => {
         share={share}
         all={all}
       />
-      <UserCommunityPosts
+      {/* <UserCommunityPosts
         data={data}
         divRef={divRef}
         hasNextPage={hasNextPage}
         fetchNextPage={fetchNextPage}
         getTimeAgo={getTimeAgo}
-      />
+      /> */}
       <UserCommunityBottomBar />
     </>
   );

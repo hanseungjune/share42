@@ -4,9 +4,9 @@ import { TokenStorage } from "./tokenStorage";
 
 const tokenStorage = new TokenStorage();
 const HTTPS_URL = process.env.REACT_APP_API_MAIN_KEY;
-const TOKEN = tokenStorage.getToken();
 
 export function useLikeMutation() {
+  const TOKEN = tokenStorage.getToken();
   const queryClient = useQueryClient();
 
   const { mutate: setLike } = useMutation(
