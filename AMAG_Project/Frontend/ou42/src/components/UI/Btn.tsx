@@ -54,8 +54,8 @@ export default function Btn({
     box-shadow: ${boxShadow};
   `;
   return (
-    <div css={btnStyle} onClick={onClick}>
+    <button type="submit" css={btnStyle}>
       {content}
-    </div>
+    </button>
   );
 }

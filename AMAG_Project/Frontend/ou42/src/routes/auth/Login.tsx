@@ -1,133 +1,49 @@
 /** @jsxImportSource @emotion/react */
-import { css } from "@emotion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TextField from "@mui/material/TextField";
 import Btn from "../../components/UI/Btn";
 import logo from "../../assets/logo.png";
-import { useNavigate } from "react-router-dom";
 import Circle from "../../components/UI/Circle";
-import { useApi } from "./../../hooks/useApi";
-import Alert from "../../components/UI/Alert";
-import { useLayoutEffect } from "react";
+import { container } from "../../styles/auth/Login";
+import { useMutation, useQueryClient } from "react-query";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { TokenStorage } from "./../../hooks/tokenStorage";
 
-const URL = "https://www.share42-together.com/api/login";
-
-const container = css`
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  .back {
-    flex: 1;
-  }
-  .logo {
-    flex: 5.5;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .loginInput {
-    flex: 3;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    .textField {
-      width: 70%;
-      .MuiOutlinedInput-root {
-        background-color: white;
-        border-radius: 15px;
-        box-shadow: -1px 2px 1px 2px rgba(209, 77, 114, 0.25);
-      }
-      &:nth-of-type(1) {
-        margin-bottom: 20px;
-      }
-      &:nth-of-type(2) {
-        margin-bottom: 10px;
-      }
-    }
-  }
-  .btn {
-    flex: 6;
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-
-    .signUp {
-      margin-top: 10px;
-      font-weight: bold;
-      margin-right: 20px;
-    }
-    .admin {
-      margin-top: 10px;
-      font-weight: bold;
-    }
-
-    .link {
-      display: flex;
-      align-items: center;
-    }
-  }
-`;
-
+const HTTPS_URL = process.env.REACT_APP_API_MAIN_KEY;
 export default function Login() {
-  const [id, setId] = useState<string>("");
-  const [pd, setPd] = useState<string>("");
-
+  const tokenStorage = new TokenStorage();
+  const [id, setId] = useState("");
+  const [password, setPassword] = useState("");
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const handleId = (
-    e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement, Element>
-  ) => {
-    const temp = e.target.value;
-    setId(() => temp as string);
-  };
-
-  const handlePd = (
-    e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement, Element>
-  ) => {
-    const temp = e.target.value;
-    setPd(() => temp as string);
-  };
-
-  const loginOptions = {
-    data: {
-      userId: id,
-      password: pd,
-    },
-  };
-
-  const postLogin = useApi("post", URL, loginOptions);
-
-  const handleLogin = () => {
-    postLogin()
-      .then((res) => {
-        const obj: {
-          token: string;
-          expire: number;
-          userId: string;
-          type: string;
-        } = {
-          token: res.data.message.token.accessToken,
-          expire: Date.now() + 1800000,
-          // expire: Date.now() + ,
-          userId: id,
-          type: "user",
-        };
-        localStorage.setItem("loginInfo", JSON.stringify(obj));
-
+  const loginMutation = useMutation(
+    (loginData: { loginid: string; loginpassword: string }) =>
+      axios({
+        url: `${HTTPS_URL}/login`,
+        method: "POST",
+        data: loginData,
+      }),
+    {
+      onSuccess: (response) => {
+        tokenStorage.setToken(response.data.accessToken);
         navigate("/home");
-      })
-      .catch((err) => Alert("error", err.response.data.message));
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "Enter") {
-      handleLogin();
+      },
+      onError: (error) => {
+        console.log(error);
+      },
+      onSettled: () => {
+        queryClient.invalidateQueries("user");
+      },
     }
-  };
+  );
 
-  useLayoutEffect(() => {}, []);
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    loginMutation.mutate({ loginid: id, loginpassword: password });
+    // 이걸 GET 요청을 ReactQuery로 하고싶다.
+  };
 
   return (
     <div css={container}>
@@ -135,24 +51,24 @@ export default function Login() {
       <div className="logo">
         <img src={logo} alt="logo" height="300" width="300" />
       </div>
-      <div className="loginInput" onKeyDown={handleKeyDown}>
+      <form className="loginInput" onSubmit={handleLogin}>
         <TextField
           size="small"
           className="textField"
           placeholder="ID"
-          onChange={handleId}
+          value={id}
+          onChange={(e) => setId(e.target.value)}
           sx={{ zIndex: "2" }}
         />
         <TextField
           size="small"
           className="textField"
           placeholder="PASSWORD"
-          onChange={handlePd}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           type="password"
           sx={{ zIndex: "2" }}
         />
-      </div>
-      <div className="btn">
         <Btn
           width="35%"
           height="12%"
@@ -163,17 +79,18 @@ export default function Login() {
           backGroundColor="#FFABAB"
           border={0}
           color={"white"}
-          onClick={handleLogin}
         />
-        <div className="link">
-          <div className="signUp" onClick={() => navigate("/signup")}>
-            회원가입
-          </div>
-          <div className="admin" onClick={() => navigate("/admin/login")}>
-            관리자 로그인
+        <div className="btn">
+          <div className="link">
+            <div className="signUp" onClick={() => navigate("/signup")}>
+              회원가입
+            </div>
+            <div className="admin" onClick={() => navigate("/admin/login")}>
+              관리자 로그인
+            </div>
           </div>
         </div>
-      </div>
+      </form>
       <Circle />
     </div>
   );

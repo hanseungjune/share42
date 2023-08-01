@@ -18,7 +18,7 @@ interface LoginRequestBody {
 }
 
 export const handlers = [
-  rest.post("https://carborn.site/api/login", (req, res, ctx) => {
+  rest.post("https://www.share42-together.com/api/login", (req, res, ctx) => {
     const { loginid, loginpassword } = req.body as LoginRequestBody;
 
     const user = users.find(
@@ -48,7 +48,7 @@ export const handlers = [
       );
     }
   }),
-  rest.get("https://carborn.site/api/logout", (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json({ status: 200 }));
-  }),
+  // rest.get("https://www.share42-together.com/api/logout", (req, res, ctx) => {
+  //   return res(ctx.status(200), ctx.json({ status: 200 }));
+  // }),
 ];
