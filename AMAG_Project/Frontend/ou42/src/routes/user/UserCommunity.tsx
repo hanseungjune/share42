@@ -84,11 +84,11 @@ const UserCommunity = () => {
   const token = tokenStorage.getToken();
 
   // const SORT_API = (sort: any, category: any, page: number) => {
-  //   return `https://www.share42-together.com/api/user/community/posts/list?page=${page}&size=${SIZE}&sort=${sort}&category=${category.num}`;
+  //   return `https://www.share42-together.com/api/user/community/posts/list?page=${page}&size=${SIZE}&sort=${sor}&category=${category.num}`;
   // };
 
   // const SEARCH_API = (sort: any, category: any, search: any, page: number) => {
-  //   return `https://www.share42-together.com/api/user/community/posts/list?page=${page}&size=${SIZE}&sort=${sort}&category=${category.num}&search=${search}`;
+  //   return `https://www.share42-together.com/api/user/community/posts/list?page=${page}&size=${SIZE}&sort=${sor}&category=${category.num}&search=${search}`;
   // };
 
   // const fetchRepositories = ({ pageParam = 1 }) => {

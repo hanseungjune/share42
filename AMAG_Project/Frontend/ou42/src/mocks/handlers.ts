@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable max-len */
 import { rest } from "msw";
 
@@ -17,6 +18,32 @@ interface LoginRequestBody {
   loginid: string;
   loginpassword: string;
 }
+
+interface dummyPostsType {
+  id: number | null;
+  title: string | null;
+  content: string | null;
+  category: string | null;
+  sort: number | null;
+}
+
+const dummyPosts = [
+  { id: 1, title: "Post 1", content: "Content 1", category: "0", sort: 1 },
+  { id: 2, title: "Post 2", content: "Content 2", category: "1", sort: 2 },
+  { id: 3, title: "Post 3", content: "Content 3", category: "2", sort: 0 },
+  { id: 4, title: "Post 4", content: "Content 4", category: "0", sort: 3 },
+  { id: 5, title: "Post 5", content: "Content 5", category: "1", sort: 1 },
+  { id: 6, title: "Post 6", content: "Content 6", category: "2", sort: 2 },
+  { id: 7, title: "Post 7", content: "Content 7", category: "0", sort: 0 },
+  { id: 8, title: "Post 8", content: "Content 8", category: "1", sort: 3 },
+  { id: 9, title: "Post 9", content: "Content 9", category: "2", sort: 1 },
+  { id: 10, title: "Post 10", content: "Content 10", category: "0", sort: 2 },
+  { id: 11, title: "Post 11", content: "Content 11", category: "1", sort: 0 },
+  { id: 12, title: "Post 12", content: "Content 12", category: "2", sort: 3 },
+  { id: 13, title: "Post 13", content: "Content 13", category: "0", sort: 1 },
+  { id: 14, title: "Post 14", content: "Content 14", category: "1", sort: 2 },
+  { id: 15, title: "Post 15", content: "Content 15", category: "2", sort: 0 },
+];
 
 const HTTPS_URL = process.env.REACT_APP_API_MAIN_KEY;
 
@@ -54,88 +81,48 @@ export const handlers = [
   // rest.get("https://www.share42-together.com/api/logout", (req, res, ctx) => {
   //   return res(ctx.status(200), ctx.json({ status: 200 }));
   // }),
-  rest.get(
-    `${HTTPS_URL}/address/reverse-geo/:latitude/:longitude`,
-    (req, res, ctx) => {
-      const { latitude, longitude } = req.params as { [key: string]: any };
-      if (latitude === 36.107157 && longitude === 128.418008) {
-        return res(
-          ctx.status(200),
-          ctx.json({
-            message: {
-              region_2depth_name: "구미시",
-              region_3depth_name: "진평동",
-            },
-          })
-        );
-      } else if (latitude === 35.869996 && longitude === 128.594313) {
-        return res(
-          ctx.status(200),
-          ctx.json({
-            message: {
-              region_2depth_name: "대구광역시",
-              region_3depth_name: "중구 남일동",
-            },
-          })
-        );
-      }
-    }
-  ),
-  rest.get(`${HTTPS_URL}/user/share/share-articles/search`, (req, res, ctx) => {
+  rest.get(`${HTTPS_URL}/user/community/posts/list`, (req, res, ctx) => {
     const page: string | null = req.url.searchParams.get("page");
     const size: string | null = req.url.searchParams.get("size");
-    const orderStandard: string | null =
-      req.url.searchParams.get("orderStandard");
-    const sigungu: string | null = req.url.searchParams.get("sigungu");
-    const dong: string | null = req.url.searchParams.get("dong");
-    const query: string | null = req.url.searchParams.get("query");
-    const lat: string | null = req.url.searchParams.get("lat");
-    const lng: string | null = req.url.searchParams.get("lng");
+    const sort: string | null = req.url.searchParams.get("sort");
+    const category: string | null = req.url.searchParams.get("category");
+    const search: string | null = req.url.searchParams.get("search");
 
-    // 이거는 Bearer 토큰 받아오는거
-    const authorizationHeader = req.headers.get("Authorization");
+    const pageNumber: number = parseInt(page || "1", 10);
+    const pageSize: number = parseInt(size || "10", 10);
 
-    // 이후 검증 및 목 데이터를 생성하는 로직을 여기에 작성할 수 있습니다.
-    // 예시로, 만약 page 파라미터가 1이고, size 파라미터가 8일 때 특정한 목 데이터를 반환하도록 하면
-    if (page === "1" && size === "8") {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          message: {
-            article: {
-              content: [
-                {id: 1, title: 'Sample Article 1', content: 'This is a sample content for article 1'},
-                {id: 2, title: 'Sample Article 2', content: 'This is a sample content for article 2'},
-                {id: 3, title: 'Sample Article 3', content: 'This is a sample content for article 3'},
-                {id: 4, title: 'Sample Article 4', content: 'This is a sample content for article 4'},
-                {id: 5, title: 'Sample Article 5', content: 'This is a sample content for article 5'},
-                {id: 6, title: 'Sample Article 6', content: 'This is a sample content for article 6'},
-                {id: 7, title: 'Sample Article 7', content: 'This is a sample content for article 7'},
-                {id: 8, title: 'Sample Article 8', content: 'This is a sample content for article 8'},
-                {id: 9, title: 'Sample Article 9', content: 'This is a sample content for article 9'},
-                {id: 10, title: 'Sample Article 10', content: 'This is a sample content for article 10'},
-                {id: 11, title: 'Sample Article 11', content: 'This is a sample content for article 11'},
-                {id: 12, title: 'Sample Article 12', content: 'This is a sample content for article 12'},
-                {id: 13, title: 'Sample Article 13', content: 'This is a sample content for article 13'},
-                {id: 14, title: 'Sample Article 14', content: 'This is a sample content for article 14'},
-                {id: 15, title: 'Sample Article 15', content: 'This is a sample content for article 15'},
-                {id: 16, title: 'Sample Article 16', content: 'This is a sample content for article 16'},
-                {id: 17, title: 'Sample Article 17', content: 'This is a sample content for article 17'},
-                {id: 18, title: 'Sample Article 18', content: 'This is a sample content for article 18'},
-                {id: 19, title: 'Sample Article 19', content: 'This is a sample content for article 19'},
-                {id: 20, title: 'Sample Article 20', content: 'This is a sample content for article 20'}
-              ],
-              totalPages: 20
-            }
-          },
-        })
+    const startIndex: number = (pageNumber - 1) * pageSize;
+    const endIndex: number = pageNumber * pageSize;
+
+    let filteredPosts = dummyPosts;
+
+    if (search) {
+      filteredPosts = filteredPosts.filter((post: dummyPostsType) =>
+        post.title?.includes(search)
       );
     }
 
+    if (category) {
+      filteredPosts = filteredPosts.filter(
+        (post: dummyPostsType) => post.category === category
+      );
+    }
+
+    if (sort) {
+      filteredPosts.sort((a, b) =>
+        sort === "0" ? b.id - a.id : b.sort - a.sort
+      );
+    }
+
+    const paginatedPosts = filteredPosts.slice(startIndex, endIndex);
+
     return res(
-      ctx.status(400),
+      ctx.status(200),
       ctx.json({
-        error: "Invalid request",
+        message: {
+          content: paginatedPosts,
+          totalPages: Math.ceil(filteredPosts.length / pageSize),
+        },
       })
     );
   }),
