@@ -1,12 +1,14 @@
 import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Alert from "../UI/Alert";
+import { TokenStorage } from "../../hooks/tokenStorage";
 
-export default function RaouterGuard() {
+const tokenStorage = new TokenStorage();
+export default function RouterGuard() {
   const url = useLocation().pathname;
   const navigate = useNavigate();
   useEffect(() => {
-    const loginInfo = localStorage.getItem("loginInfo");
+    const loginInfo = tokenStorage.getToken();
     if (loginInfo) {
       const parsedLoginInfo = JSON.parse(loginInfo);
       const expire = parsedLoginInfo.expire;
