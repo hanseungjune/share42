@@ -2,335 +2,48 @@
 /** @jsxImportSource @emotion/react */
 
 import {
-  cloneElement,
   memo,
   Suspense,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
 } from "react";
 import { AiOutlineHeart, AiTwotoneHeart, AiOutlineEye } from "react-icons/ai";
 import { GiRoundStar } from "react-icons/gi";
-import { useInfiniteQuery, useQuery, useQueryClient } from "react-query";
-import { ReactJSXElement } from "@emotion/react/types/jsx-namespace";
 import { useNavigate } from "react-router-dom";
-import { useMutation } from "react-query";
-import axios from "axios";
-
-import { useBranchChoiceStore } from "../../components/map/store/useBranchChoiceStore";
 import UserHomeSpeedDial from "../../components/user/UserHomeSpeedDial";
 import * as userHomeStyle from "../../components/user/UserHomeStyle";
 import { ErrorMessage } from "../../components/ErrorMessage";
 import ErrorBoundary from "../../components/ErrorBoundary";
 import BottomMenuBar from "../../components/BottomMenuBar";
-import { useGetUserToken } from "../../hooks/useGetToken";
-import { L, pipe, takeAll } from "./../../custom/FxJS";
 import DropDown from "../../components/UI/DropDown";
 import Loading from "../../components/Loading";
 import pinkBox from "../../assets/pinkBox.png";
-import homeStore from "../../store/homeStore";
-
-interface Props {
-  fetchNextPage: any;
-  data: any;
-  hasNextPage: boolean;
-  refetch: any;
-}
-
-interface Location {
-  latitude: number;
-  longitude: number;
-}
-
-interface Data {
-  category: string;
-  content: string;
-  hits: number;
-  id: number;
-  img: string;
-  likeCount: null | number;
-  name: string;
-  nickname: string;
-  sharePrice: number;
-  shareStatus: number;
-  uptDt: string;
-  userId: string;
-  likeCheck: null | number;
-  recommendation?: boolean;
-}
-
-// intersaction 옵션
-const intersectionOptions = {
-  root: document.querySelector("#scrollArea"),
-  rootMargin: "0px",
-  threshold: 0.5,
-};
-
-// API_URL
-const API_URL = `https://www.share42-together.com/api/user/share/share-articles/search`;
-
-// 데이터 fetch 컴포넌트
-function UserHomeFetcher({
-  children,
-  sortNum,
-}: {
-  children: React.PropsWithChildren<ReactJSXElement>;
-  sortNum: number;
-}) {
-  const [location, setLocation] = useState<Location>({
-    latitude: 0,
-    longitude: 0,
-  });
-  const { search, setSearch } = homeStore();
-  const TOKEN = useGetUserToken();
-  const queryClient = useQueryClient();
-
-  // 현재 위치를 받는 API 함수
-  const locationAPI = () => {
-    return axios({
-      method: "get",
-      url: `https://www.share42-together.com/api/common/address/reverse-geo/${location.latitude}/${location.longitude}`,
-    });
-  };
-
-  // 현재 위치 받는 query
-  const { data: address } = useQuery(["get-current-location"], locationAPI, {
-    select: (data) => {
-      if (data.data.message) {
-        const { region_2depth_name, region_3depth_name } = data.data.message;
-        return [region_2depth_name, region_3depth_name];
-      }
-    },
-
-    onSuccess: (data) => {
-      if (data?.length) {
-        // infinityquery 함수
-        const getListFnc = ({ pageParam = 1 }) => {
-          return axios({
-            method: "get",
-            url: `${API_URL}`,
-            params: {
-              page: pageParam,
-              size: 8,
-              orderStandard: sortNum,
-              sigungu: data[0],
-              dong: data[1],
-              query: search,
-              lat: location.latitude,
-              lng: location.longitude,
-            },
-            headers: {
-              Authorization: `Bearer ${TOKEN}`,
-            },
-          });
-        };
-
-        queryClient.prefetchInfiniteQuery(["get-object-list"], getListFnc);
-      }
-    },
-  });
-
-  // infinityquery 함수
-  const getListFnc = ({ pageParam = 1 }) => {
-    return axios({
-      method: "get",
-      url: `${API_URL}`,
-      params: {
-        page: pageParam,
-        size: 8,
-        orderStandard: sortNum,
-        sigungu: address?.length ? address[0] : "",
-        dong: address?.length ? address[1] : "",
-        query: search,
-        lat: location.latitude,
-        lng: location.longitude,
-      },
-      headers: {
-        Authorization: `Bearer ${TOKEN}`,
-      },
-    });
-  };
-
-  // 공유글 데이터 불러오는 infinity query
-  const { fetchNextPage, data, hasNextPage } = useInfiniteQuery(
-    ["get-object-list"],
-    getListFnc,
-    {
-      getNextPageParam: (lastPage, allPage) => {
-        if (allPage[0].data.message.article.totalPages > allPage.length) {
-          return allPage.length + 1;
-        }
-      },
-      select: (data) => {
-        const newData = pipe(L.map, L.flatten, takeAll);
-        let recommendation = [];
-        if (data.pages.length) {
-          recommendation = data.pages[0].data.message.CFRecommendation;
-        }
-        return {
-          pages: recommendation?.length
-            ? [
-                ...recommendation,
-                ...newData(
-                  (arr: any) => arr.data.message.article.content,
-                  data.pages
-                ),
-              ]
-            : [
-                ...newData(
-                  (arr: any) => arr.data.message.article.content,
-                  data.pages
-                ),
-              ],
-          pageParams: data.pageParams,
-        };
-      },
-      enabled: !!address?.length,
-    }
-  );
-
-  useEffect(() => {
-    if (location.latitude && location.longitude && address) {
-      // infinityquery 함수
-      const getListFnc = ({ pageParam = 1 }) => {
-        return axios({
-          method: "get",
-          url: `${API_URL}`,
-          params: {
-            page: pageParam,
-            size: 8,
-            orderStandard: sortNum,
-            sigungu: address[0],
-            dong: address[1],
-            query: search,
-            lat: location.latitude,
-            lng: location.longitude,
-          },
-          headers: {
-            Authorization: `Bearer ${TOKEN}`,
-          },
-        });
-      };
-
-      queryClient.prefetchInfiniteQuery(["get-object-list"], getListFnc);
-    }
-  }, [sortNum]);
-
-  // 현재 좌표를 받음
-  useLayoutEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (props) => {
-          const API = () => {
-            return axios({
-              method: "get",
-              url: `https://www.share42-together.com/api/common/address/reverse-geo/${props.coords.latitude}/${props.coords.longitude}`,
-            });
-          };
-
-          queryClient.prefetchQuery(["get-current-location"], API);
-          setLocation((location) => {
-            return {
-              latitude: props.coords.latitude,
-              longitude: props.coords.longitude,
-            };
-          });
-        },
-        null,
-        {
-          enableHighAccuracy: false,
-          maximumAge: 0,
-          timeout: Infinity,
-        }
-      );
-    }
-  }, []);
-
-  return cloneElement(children, { fetchNextPage, data, hasNextPage });
-}
+import { Data,  Props } from "../../type/UserHome";
+import { UserHomeFetcher } from "../../components/user/UserHomeFetcher";
+import { useLikeMutation } from "../../hooks/useLikeMutation";
+import { useIntersectionObserver } from "../../hooks/useIntersectionObserver";
 
 // 컨텐츠를 보여주는 컴포넌트
 function UserHomeList(props: Partial<Props>) {
   const { fetchNextPage, data, hasNextPage } = props;
-  const { setBranchChoice } = useBranchChoiceStore();
   const divRef = useRef<HTMLDivElement | any>({});
   const ImgUrl = process.env.REACT_APP_IMAGE_URL;
-  const queryClient = useQueryClient();
-  const TOKEN = useGetUserToken();
   const navigate = useNavigate();
-
-  const { mutate: setLike } = useMutation(
-    (id) => {
-      return axios({
-        method: "post",
-        url: `https://www.share42-together.com/api/user/share/share-articles/like/${id}`,
-        headers: {
-          Authorization: `Bearer ${TOKEN}`,
-        },
-      });
-    },
-    {
-      onSuccess: () => {
-        queryClient.refetchQueries(["get-object-list"], { exact: true });
-      },
-    }
+  
+  const { like } = useLikeMutation();
+  const { observeElement } = useIntersectionObserver(
+    fetchNextPage,
+    hasNextPage
   );
-
-  const { mutate: setUnLike } = useMutation(
-    (id) => {
-      return axios({
-        method: "post",
-        url: `https://www.share42-together.com/api/user/share/share-articles/unlike/${id}`,
-        headers: {
-          Authorization: `Bearer ${TOKEN}`,
-        },
-      });
-    },
-    {
-      onSuccess: () => {
-        queryClient.refetchQueries(["get-object-list"], { exact: true });
-      },
-    }
-  );
-
-  // 생성된 객체 중 마지막 객체가 인식되면 다시 query를 호출한다.
-  const intersection = new IntersectionObserver((entries, observer) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        observer.disconnect();
-        if (hasNextPage) {
-          fetchNextPage();
-        }
-      }
-    });
-  }, intersectionOptions);
 
   // data가 변경될 떄마다 새로운 요소를 감시한다.
   useEffect(() => {
     if (divRef?.current && data?.pages?.length) {
       const lastIndex = data?.pages?.length - 1;
-      intersection.observe(divRef?.current[lastIndex]);
+      observeElement(divRef?.current[lastIndex]);
     }
   }, [data]);
-
-  // 좋아요 버튼 누름
-  const like = (
-    e: React.MouseEvent<SVGElement, MouseEvent>,
-    id: any,
-    likeCheck: null | number
-  ) => {
-    e.stopPropagation();
-    if (likeCheck) {
-      setUnLike(id);
-    } else {
-      setLike(id);
-    }
-  };
-
-  useEffect(() => {
-    setBranchChoice({ name: "", id: null });
-  }, []);
 
   return (
     <>
@@ -428,7 +141,6 @@ function UserHomeList(props: Partial<Props>) {
               <p>{`${
                 content.length >= 10 ? `${content.slice(0, 10)}...` : content
               }`}</p>
-              {/* <p>서울 · 2분전</p> */}
               <p>{`${category} · ${time}`}</p>
 
               <div className="icon">

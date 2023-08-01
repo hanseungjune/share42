@@ -11,8 +11,7 @@ export class TokenStorage {
   }
 
   getToken() {
-    let protectedToken = this.#nekotsseacce;
-    return protectedToken ? JSON.parse(protectedToken) : null;
+    return this.#nekotsseacce;
   }
 
   removeToken() {
