@@ -44,4 +44,4 @@ root.render(
   </QueryClientProvider>
 );
 
-serviceWorkerRegistration.register();
+// serviceWorkerRegistration.register();
