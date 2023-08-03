@@ -21,20 +21,56 @@ interface LoginRequestBody {
 
 const HTTPS_URL = process.env.REACT_APP_API_MAIN_KEY;
 
-const posts = [...Array(30).keys()].map((id) => ({
-  id: id + 1,
-  category: id % 5 === 0 ? 'recent' : id % 5 === 1 ? 'popular' : id % 5 === 2 ? 'news' : id % 5 === 3 ? 'need' : 'share',
-  title: `게시물 제목 ${id + 1}`,
-  content: `게시물 내용 ${id + 1}`,
-  region: '서울특별시 종로구',
-  date: new Date(),
-  hit: Math.floor(Math.random() * 100),
-  commentCount: Math.floor(Math.random() * 10),
-  userId: 'hanseungjune'
-}))
+const posts = [...Array(100).keys()].map((id) => {
+  const date = new Date();
+  date.setDate(date.getDate() + id + 1); // 현재 날짜에 id+1 일수를 더합니다.
+  return {
+    id: id + 1,
+    category:
+      id % 5 === 0
+        ? "recent"
+        : id % 5 === 1
+        ? "popular"
+        : id % 5 === 2
+        ? "news"
+        : id % 5 === 3
+        ? "need"
+        : "share",
+    title: `게시물 제목 ${id + 1}`,
+    content: `게시물 내용 ${id + 1}`,
+    region: "서울특별시 종로구",
+    date: date,
+    hit: Math.floor(Math.random() * 100),
+    commentCount: Math.floor(Math.random() * 10),
+    userId: "hanseungjune",
+  };
+});
 
-function getPosts(page = 1) {
-  return posts.slice((page - 1) * 10, page * 10)
+function getPosts(page = 1, sort = "recent", order = "asc") {
+  let sortedPosts = [...posts];
+
+  if (sort === "news" || sort === "need" || sort === "share") {
+    sortedPosts = sortedPosts.filter((post) => post.category === sort);
+  }
+
+  if (
+    sort === "recent" ||
+    sort === "news" ||
+    sort === "need" ||
+    sort === "share"
+  ) {
+    sortedPosts.sort((a, b) => {
+      return order === "asc"
+        ? a.date.getTime() - b.date.getTime()
+        : b.date.getTime() - a.date.getTime();
+    });
+  } else if (sort === "popular") {
+    sortedPosts.sort((a, b) => {
+      return order === "asc" ? a.hit - b.hit : b.hit - a.hit;
+    });
+  }
+
+  return sortedPosts.slice((page - 1) * 10, page * 10);
 }
 
 export const handlers = [
@@ -56,7 +92,7 @@ export const handlers = [
           accessToken: accessToken,
           userType: user.userType,
           expire: expire,
-          userId : loginid
+          userId: loginid,
         })
       );
     } else {
@@ -73,10 +109,9 @@ export const handlers = [
   //   return res(ctx.status(200), ctx.json({ status: 200 }));
   // }),
   rest.get(`${HTTPS_URL}/posts`, (req, res, ctx) => {
-    const page = Number(req.url.searchParams.get('page')) || 1
-    return res(
-      ctx.status(200),
-      ctx.json(getPosts(page))
-    )
-  })
+    const page = Number(req.url.searchParams.get("page")) || 1;
+    const sort = req.url.searchParams.get("sort") || "recent";
+    const order = req.url.searchParams.get("order") || "asc";
+    return res(ctx.status(200), ctx.json(getPosts(page, sort, order)));
+  }),
 ];

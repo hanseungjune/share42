@@ -13,13 +13,13 @@
 // import { TokenStorage } from './../../hooks/tokenStorage';
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { TokenStorage } from "../../hooks/tokenStorage";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaRegComment } from "react-icons/fa";
 import { getTimeAgo } from "../../utils/getTimeAgo";
 import UserCommunityBtns from "../../components/community/UserCommunityBtns";
 import UserCommunityBottomBar from "../../components/community/UserCommunityBottomBar";
+import { UserCommunityBtnStyle } from "../../styles/user/UserCommunity";
 
 const sortArray = [
   { idx: 0, num: 0, title: "최신순", category: "recent" },
@@ -41,12 +41,27 @@ export type Post = {
   commentCount: number;
 };
 
+type SortCategories = "recent" | "popular" | "news" | "need" | "share";
+
+interface OrderState {
+  [key: string]: 'asc' | 'desc';
+}
+
 const HTTPS_URL = process.env.REACT_APP_API_MAIN_KEY;
 const UserCommunity = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [sort, setSort] = useState("recent");
+  const [order, setOrder] = useState<OrderState>({
+    recent: "asc",
+    popular: "asc",
+    news: "asc",
+    need: "asc",
+    share: "asc",
+  });
+  const [activeSort, setActiveSort] = useState("");
   const loader = useRef<HTMLDivElement>(null);
 
   const handleDetailNavigate = (id: number) => {
@@ -57,15 +72,18 @@ const UserCommunity = () => {
     if (!hasMore) return;
 
     const nextPage = page + 1;
-    const response = await axios.get(`${HTTPS_URL}/posts?page=${page}`);
+    const response = await axios.get(
+      `${HTTPS_URL}/posts?page=${page}&sort=${sort}&order=${order[sort]}`
+    );
+    console.log(`${HTTPS_URL}/posts?page=${page}&sort=${sort}&order=${order[sort]}`)
     setPosts((prev) => [...prev, ...response.data]);
-    
+
     if (response.data.length === 0) {
       setHasMore(false);
     } else {
       setPage(nextPage);
     }
-  }, [page, hasMore]);
+  }, [page, hasMore, sort, order]);
 
   const handleObserver = useCallback(
     (entities: any) => {
@@ -87,6 +105,30 @@ const UserCommunity = () => {
 
     return () => observer.disconnect();
   }, [handleObserver]);
+
+  const handleSort = (sortCategory: SortCategories) => {
+    setActiveSort(sortCategory);
+    if (sort === sortCategory) {
+      setOrder((prev) => ({
+        ...prev,
+        [sortCategory]: prev[sortCategory] === "asc" ? "desc" : "asc",
+      }));
+    } else {
+      setSort(sortCategory);
+      setOrder((prev) => ({
+        ...prev,
+        [sortCategory]: "asc",
+      }));
+    }
+
+    setPosts([]);
+    setPage(1);
+    setHasMore(true);
+  };
+
+  function isSortCategory(category: string): category is SortCategories {
+    return ["recent", "popular", "news", "need", "share"].includes(category);
+  }
 
   return (
     <>
@@ -203,7 +245,7 @@ const UserCommunity = () => {
                       marginLeft: "0.5rem",
                     }}
                   >
-                    {item.hits}
+                    {item.hit}
                   </div>
                 </div>
               </div>
@@ -211,19 +253,46 @@ const UserCommunity = () => {
           );
         })}
       </div>
+      <div
+        style={{
+          height: "7vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: "1vh",
+          position: "fixed",
+          top: "6vh",
+          left: "7vw",
+          backgroundColor: "#ffffff !important",
+        }}
+        css={UserCommunityBtnStyle}
+      >
+        {/* 순서버튼 */}
+        {sortArray.map((item, idx) => {
+          if (item.title === "모든") {
+            return null;
+          }
+          return (
+            <button
+              key={idx}
+              value={item.title}
+              className={
+                item.category === activeSort 
+                  ? `sort-button-news active` 
+                  : `sort-button-news`
+              }
+              onClick={() => {
+                if (isSortCategory(item.category)) {
+                  handleSort(item.category);
+                }
+              }}
+            >
+              {item.title}
+            </button>
+          );
+        })}
+      </div>
       <div ref={loader}>Loading...</div>
-      {/* <UserCommunityBtns
-        sort={sort}
-        category={category}
-        sortArray={sortArray}
-        handleCommunitySort={handleCommunitySort}
-        recent={recent}
-        popular={popular}
-        news={news}
-        need={need}
-        share={share}
-        all={all}
-      /> */}
       <UserCommunityBottomBar />
     </>
   );
