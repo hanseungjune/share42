@@ -19,33 +19,23 @@ interface LoginRequestBody {
   loginpassword: string;
 }
 
-interface dummyPostsType {
-  id: number | null;
-  title: string | null;
-  content: string | null;
-  category: string | null;
-  sort: number | null;
-}
-
-const dummyPosts = [
-  { id: 1, title: "Post 1", content: "Content 1", category: "0", sort: 1 },
-  { id: 2, title: "Post 2", content: "Content 2", category: "1", sort: 2 },
-  { id: 3, title: "Post 3", content: "Content 3", category: "2", sort: 0 },
-  { id: 4, title: "Post 4", content: "Content 4", category: "0", sort: 3 },
-  { id: 5, title: "Post 5", content: "Content 5", category: "1", sort: 1 },
-  { id: 6, title: "Post 6", content: "Content 6", category: "2", sort: 2 },
-  { id: 7, title: "Post 7", content: "Content 7", category: "0", sort: 0 },
-  { id: 8, title: "Post 8", content: "Content 8", category: "1", sort: 3 },
-  { id: 9, title: "Post 9", content: "Content 9", category: "2", sort: 1 },
-  { id: 10, title: "Post 10", content: "Content 10", category: "0", sort: 2 },
-  { id: 11, title: "Post 11", content: "Content 11", category: "1", sort: 0 },
-  { id: 12, title: "Post 12", content: "Content 12", category: "2", sort: 3 },
-  { id: 13, title: "Post 13", content: "Content 13", category: "0", sort: 1 },
-  { id: 14, title: "Post 14", content: "Content 14", category: "1", sort: 2 },
-  { id: 15, title: "Post 15", content: "Content 15", category: "2", sort: 0 },
-];
-
 const HTTPS_URL = process.env.REACT_APP_API_MAIN_KEY;
+
+const posts = [...Array(30).keys()].map((id) => ({
+  id: id + 1,
+  category: id % 5 === 0 ? 'recent' : id % 5 === 1 ? 'popular' : id % 5 === 2 ? 'news' : id % 5 === 3 ? 'need' : 'share',
+  title: `게시물 제목 ${id + 1}`,
+  content: `게시물 내용 ${id + 1}`,
+  region: '서울특별시 종로구',
+  date: new Date(),
+  hit: Math.floor(Math.random() * 100),
+  commentCount: Math.floor(Math.random() * 10),
+  userId: 'hanseungjune'
+}))
+
+function getPosts(page = 1) {
+  return posts.slice((page - 1) * 10, page * 10)
+}
 
 export const handlers = [
   rest.post(`${HTTPS_URL}/login`, (req, res, ctx) => {
@@ -66,6 +56,7 @@ export const handlers = [
           accessToken: accessToken,
           userType: user.userType,
           expire: expire,
+          userId : loginid
         })
       );
     } else {
@@ -81,49 +72,11 @@ export const handlers = [
   // rest.get("https://www.share42-together.com/api/logout", (req, res, ctx) => {
   //   return res(ctx.status(200), ctx.json({ status: 200 }));
   // }),
-  rest.get(`${HTTPS_URL}/user/community/posts/list`, (req, res, ctx) => {
-    const page: string | null = req.url.searchParams.get("page");
-    const size: string | null = req.url.searchParams.get("size");
-    const sort: string | null = req.url.searchParams.get("sort");
-    const category: string | null = req.url.searchParams.get("category");
-    const search: string | null = req.url.searchParams.get("search");
-
-    const pageNumber: number = parseInt(page || "1", 10);
-    const pageSize: number = parseInt(size || "10", 10);
-
-    const startIndex: number = (pageNumber - 1) * pageSize;
-    const endIndex: number = pageNumber * pageSize;
-
-    let filteredPosts = dummyPosts;
-
-    if (search) {
-      filteredPosts = filteredPosts.filter((post: dummyPostsType) =>
-        post.title?.includes(search)
-      );
-    }
-
-    if (category) {
-      filteredPosts = filteredPosts.filter(
-        (post: dummyPostsType) => post.category === category
-      );
-    }
-
-    if (sort) {
-      filteredPosts.sort((a, b) =>
-        sort === "0" ? b.id - a.id : b.sort - a.sort
-      );
-    }
-
-    const paginatedPosts = filteredPosts.slice(startIndex, endIndex);
-
+  rest.get(`${HTTPS_URL}/posts`, (req, res, ctx) => {
+    const page = Number(req.url.searchParams.get('page')) || 1
     return res(
       ctx.status(200),
-      ctx.json({
-        message: {
-          content: paginatedPosts,
-          totalPages: Math.ceil(filteredPosts.length / pageSize),
-        },
-      })
-    );
-  }),
+      ctx.json(getPosts(page))
+    )
+  })
 ];

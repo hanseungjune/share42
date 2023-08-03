@@ -1,5 +1,6 @@
 /** @jsxImportSource @emotion/react */
-import { UserCommunityBtnStyle } from "../../routes/user/UserCommunity";
+
+import { UserCommunityBtnStyle } from "../../styles/user/UserCommunity";
 
 export interface UserCommunityBtnsProps {
   sort: number;

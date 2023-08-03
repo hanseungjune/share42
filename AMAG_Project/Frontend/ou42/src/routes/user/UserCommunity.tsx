@@ -1,55 +1,25 @@
 /* eslint-disable max-len */
 /** @jsxImportSource @emotion/react */
-import { css } from "@emotion/react";
-import { useEffect, useRef, useState } from "react";
-import communityStore from "../../store/communityStore";
-import { useInfiniteQuery, useQuery, useQueryClient } from "react-query";
+// import { css } from "@emotion/react";
+// import { useEffect, useRef, useState } from "react";
+// import communityStore from "../../store/communityStore";
+// import { useInfiniteQuery, useQuery, useQueryClient } from "react-query";
+// import axios from "axios";
+// import UserCommunityBtns from "../../components/community/UserCommunityBtns";
+// import UserCommunityPosts from "../../components/community/UserCommunityPosts";
+// import UserCommunityBottomBar from "../../components/community/UserCommunityBottomBar";
+// import { getTimeAgo } from "../../utils/getTimeAgo";
+// import { L, pipe, takeAll } from "../../custom/FxJS";
+// import { TokenStorage } from './../../hooks/tokenStorage';
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { TokenStorage } from "../../hooks/tokenStorage";
 import axios from "axios";
-import UserCommunityBtns from "../../components/community/UserCommunityBtns";
-import UserCommunityPosts from "../../components/community/UserCommunityPosts";
-import UserCommunityBottomBar from "../../components/community/UserCommunityBottomBar";
+import { useNavigate } from "react-router-dom";
+import { FaEye, FaRegComment } from "react-icons/fa";
 import { getTimeAgo } from "../../utils/getTimeAgo";
-import { L, pipe, takeAll } from "../../custom/FxJS";
-import { TokenStorage } from './../../hooks/tokenStorage';
-
-export const UserCommunityBtnStyle = css`
-  & > .sort-button-news,
-  & > .sort-button-need,
-  & > .sort-button-share {
-    font-size: 0.7rem;
-    width: 15vw;
-    height: 4vh;
-    margin-right: 3vw;
-    border-radius: 25%;
-    background-color: white;
-    border-color: rgb(173, 173, 173);
-    border: 1px solid black;
-  }
-
-  & > .sort-button-recent,
-  & > .sort-button-popular {
-    font-size: 0.7rem;
-    width: 15vw;
-    height: 4vh;
-    margin-right: 3vw;
-    border-radius: 25%;
-    color: #ffabab;
-    background-color: white;
-    border:#ffabab;
-  }
-  & > .sort-button-recent.active,
-  & > .sort-button-popular.active,
-  & > .sort-button-news.active,
-  & > .sort-button-need.active,
-  & > .sort-button-share.active {
-    background-color: #ffabab;
-    border: none;
-    color: #ffffff;
-    font-weight: 900;
-  }
-`;
-
-const SIZE = 10;
+import UserCommunityBtns from "../../components/community/UserCommunityBtns";
+import UserCommunityBottomBar from "../../components/community/UserCommunityBottomBar";
 
 const sortArray = [
   { idx: 0, num: 0, title: "최신순", category: "recent" },
@@ -60,128 +30,189 @@ const sortArray = [
   { idx: 5, num: 0, title: "모든", category: "all" },
 ];
 
-const tokenStorage = new TokenStorage();
+export type Post = {
+  id: number;
+  category: string;
+  title: string;
+  content: string;
+  region: string;
+  date: Date;
+  hit: number;
+  commentCount: number;
+};
+
+const HTTPS_URL = process.env.REACT_APP_API_MAIN_KEY;
 const UserCommunity = () => {
-  const [recent, setRecent] = useState<boolean>(false);
-  const [popular, setPopular] = useState<boolean>(false);
-  const [news, setNews] = useState<boolean>(false);
-  const [need, setNeed] = useState<boolean>(false);
-  const [share, setShare] = useState<boolean>(false);
-  const [all, setAll] = useState<boolean>(false);
+  const navigate = useNavigate();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const loader = useRef<HTMLDivElement>(null);
 
-  const [sort, setSort] = useState<number>(0);
-  const [category, setCategory] = useState<{
-    idx: number;
-    num: number;
-    title: string;
-  }>({
-    idx: 0,
-    num: 0,
-    title: "모든",
-  });
-  const { search } = communityStore();
-  const divRef = useRef<HTMLDivElement | any>({});
-  const token = tokenStorage.getToken();
-
-  // const SORT_API = (sort: any, category: any, page: number) => {
-  //   return `https://www.share42-together.com/api/user/community/posts/list?page=${page}&size=${SIZE}&sort=${sor}&category=${category.num}`;
-  // };
-
-  // const SEARCH_API = (sort: any, category: any, search: any, page: number) => {
-  //   return `https://www.share42-together.com/api/user/community/posts/list?page=${page}&size=${SIZE}&sort=${sor}&category=${category.num}&search=${search}`;
-  // };
-
-  // const fetchRepositories = ({ pageParam = 1 }) => {
-  //   return axios({
-  //     method: "get",
-  //     url: search
-  //       ? SEARCH_API(sort, category, search, pageParam)
-  //       : SORT_API(sort, category, pageParam),
-  //     headers: {
-  //       Authorization: `Bearer ${token}`,
-  //     },
-  //   });
-  // };
-
-  // const { data, hasNextPage, fetchNextPage } = useInfiniteQuery(
-  //   ["getCommunity", sort, category, search],
-  //   fetchRepositories,
-  //   {
-  //     getNextPageParam: (lastPage, allPages: any) => {
-  //       if (allPages[0].data.message.totalPages > allPages.length) {
-  //         return allPages.length + 1;
-  //       }
-  //     },
-  //     select: (data) => {
-  //       const newData = pipe(L.map, L.flatten, takeAll);
-
-  //       return {
-  //         pages: newData((d: any) => d.data.message.content, data.pages),
-  //         pageParams: data?.pageParams,
-  //       };
-  //     },
-  //     suspense: false,
-  //   }
-  // );
-
-  // 정렬 요청
-  const handleCommunitySort = (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) => {
-    const value: string = e?.currentTarget?.value;
-    const target = sortArray.filter(function (item) {
-      return item.title === value;
-    });
-    // 정렬
-    if (target[0].idx >= 0 && target[0].idx < 2) {
-      setSort(target[0].num);
-    } else if (target[0].idx >= 2 && target[0].idx < 5) {
-      setCategory({
-        idx: target[0].idx,
-        num: target[0].num,
-        title: target[0].title,
-      });
-    }
-    if (category.title === value) {
-      setCategory({ idx: 5, num: 0, title: "모든" });
-    }
+  const handleDetailNavigate = (id: number) => {
+    navigate(`/user/community/${id}`);
   };
 
-  useEffect(() => {
-    if (sort === 0) {
-      setRecent(true);
-      setPopular(false);
+  const loadMore = useCallback(async () => {
+    if (!hasMore) return;
+
+    const nextPage = page + 1;
+    const response = await axios.get(`${HTTPS_URL}/posts?page=${page}`);
+    setPosts((prev) => [...prev, ...response.data]);
+    
+    if (response.data.length === 0) {
+      setHasMore(false);
     } else {
-      setRecent(false);
-      setPopular(true);
+      setPage(nextPage);
+    }
+  }, [page, hasMore]);
+
+  const handleObserver = useCallback(
+    (entities: any) => {
+      const target = entities[0];
+      if (target.isIntersecting) {
+        loadMore();
+      }
+    },
+    [loadMore]
+  );
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(handleObserver, {
+      threshold: 0.9,
+    });
+    if (loader.current) {
+      observer.observe(loader.current);
     }
 
-    if (category.idx === 2) {
-      setNews(true);
-      setNeed(false);
-      setShare(false);
-      setAll(false);
-    } else if (category.idx === 3) {
-      setNews(false);
-      setNeed(true);
-      setShare(false);
-      setAll(false);
-    } else if (category.idx === 4) {
-      setNews(false);
-      setNeed(false);
-      setShare(true);
-      setAll(false);
-    } else {
-      setNews(false);
-      setNeed(false);
-      setShare(false);
-      setAll(true);
-    }
-  }, [sort, category.idx]);
+    return () => observer.disconnect();
+  }, [handleObserver]);
 
   return (
     <>
-      <UserCommunityBtns
+      <div
+        style={{
+          borderTop: "1px solid #adadad",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          marginBottom: "7vh",
+          marginTop: "11vh",
+        }}
+      >
+        {posts.map((item: any, index: number) => {
+          return (
+            <div
+              style={{
+                padding: "1rem",
+                height: "140px",
+                width: "90vw",
+                borderBottom: "1px solid #adadad",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+              key={index}
+              onClick={() => handleDetailNavigate(item.userId)}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <span
+                  style={{
+                    padding: "0.5rem 1rem",
+                    width: "4rem",
+                    height: "1.4rem",
+                    backgroundColor: "#EFEFEF",
+                    color: "#3b3b3b",
+                  }}
+                >
+                  {item.category}
+                </span>
+                <span
+                  style={{
+                    fontSize: "1.4rem",
+                    fontWeight: "900",
+                    lineHeight: "2.5rem",
+                  }}
+                >
+                  {item.title.slice(0, 15) + "..."}
+                </span>
+                <span
+                  style={{
+                    color: "#adadad",
+                    lineHeight: "1rem",
+                    fontWeight: "900",
+                  }}
+                >
+                  {item.content.slice(0, 15) + "..."}
+                </span>
+                <span
+                  style={{
+                    color: "#adadad",
+                    lineHeight: "2rem",
+                    fontWeight: "900",
+                  }}
+                >
+                  {item.region + " " + getTimeAgo(item.date)}
+                </span>
+              </div>
+              <div
+                style={{
+                  width: "24vw",
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "flex-end",
+                  justifyContent: "end",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#adadad",
+                    fontSize: "1rem",
+                  }}
+                >
+                  <FaRegComment
+                    style={{
+                      fontSize: "1rem",
+                      color: "#adadad",
+                    }}
+                  />
+                  <div
+                    style={{
+                      marginLeft: "0.5rem",
+                      marginRight: "0.5rem",
+                    }}
+                  >
+                    {item.commentCount}
+                  </div>
+                  <FaEye
+                    style={{
+                      fontSize: "1.2rem",
+                      color: "#adadad",
+                    }}
+                  />
+                  <div
+                    style={{
+                      marginLeft: "0.5rem",
+                    }}
+                  >
+                    {item.hits}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div ref={loader}>Loading...</div>
+      {/* <UserCommunityBtns
         sort={sort}
         category={category}
         sortArray={sortArray}
@@ -192,13 +223,6 @@ const UserCommunity = () => {
         need={need}
         share={share}
         all={all}
-      />
-      {/* <UserCommunityPosts
-        data={data}
-        divRef={divRef}
-        hasNextPage={hasNextPage}
-        fetchNextPage={fetchNextPage}
-        getTimeAgo={getTimeAgo}
       /> */}
       <UserCommunityBottomBar />
     </>

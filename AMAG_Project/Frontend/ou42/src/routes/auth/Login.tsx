@@ -27,7 +27,7 @@ export default function Login() {
       }),
     {
       onSuccess: (response) => {
-        tokenStorage.setToken(response.data.accessToken);
+        tokenStorage.setToken(response.data);
         navigate("/home");
       },
       onError: (error) => {
