@@ -1,4 +1,4 @@
-export function calculateTime(uptDt: string): string {
+export function useCalculateTime(uptDt: string): string {
   const date = new Date();
   let time = "";
 

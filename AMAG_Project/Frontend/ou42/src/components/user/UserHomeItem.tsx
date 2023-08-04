@@ -1,6 +1,6 @@
 import { AiOutlineEye, AiOutlineHeart, AiTwotoneHeart } from "react-icons/ai";
 import { GiRoundStar } from "react-icons/gi";
-import { calculateTime } from "../../hooks/calculateTime";
+import { useCalculateTime } from "../../hooks/useCalculateTime";
 import { memo } from "react";
 import { Data } from "../../type/UserHome";
 
@@ -26,7 +26,7 @@ const UserHomeItem: React.FC<UserHomeItemProps> = memo(
       recommendation,
     } = data;
 
-    const time = calculateTime(uptDt);
+    const time = useCalculateTime(uptDt);
 
     return (
       <div className="item" onClick={() => navigate(`/user/share-post/${id}`)}>
