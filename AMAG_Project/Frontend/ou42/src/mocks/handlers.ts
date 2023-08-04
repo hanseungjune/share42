@@ -26,16 +26,7 @@ const posts = [...Array(100).keys()].map((id) => {
   date.setDate(date.getDate() + id + 1); // 현재 날짜에 id+1 일수를 더합니다.
   return {
     id: id + 1,
-    category:
-      id % 5 === 0
-        ? "recent"
-        : id % 5 === 1
-        ? "popular"
-        : id % 5 === 2
-        ? "news"
-        : id % 5 === 3
-        ? "need"
-        : "share",
+    category: id % 3 === 0 ? "news" : id % 3 === 1 ? "need" : "share",
     title: `게시물 제목 ${id + 1}`,
     content: `게시물 내용 ${id + 1}`,
     region: "서울특별시 종로구",
@@ -46,8 +37,16 @@ const posts = [...Array(100).keys()].map((id) => {
   };
 });
 
-function getPosts(page = 1, sort = "recent", order = "asc") {
+function getPosts(page = 1, sort = "recent", order = "asc", search = "") {
   let sortedPosts = [...posts];
+
+  console.log(search.length)
+  if (search) {
+    sortedPosts = sortedPosts.filter((post) => post.title.includes(search));
+  } else if (search.length === 0 || search.trim() === '') {
+    sortedPosts = [...posts];
+  }
+  console.log(sortedPosts)
 
   if (sort === "news" || sort === "need" || sort === "share") {
     sortedPosts = sortedPosts.filter((post) => post.category === sort);
@@ -112,6 +111,7 @@ export const handlers = [
     const page = Number(req.url.searchParams.get("page")) || 1;
     const sort = req.url.searchParams.get("sort") || "recent";
     const order = req.url.searchParams.get("order") || "asc";
-    return res(ctx.status(200), ctx.json(getPosts(page, sort, order)));
+    const search = req.url.searchParams.get("search") || "";
+    return res(ctx.status(200), ctx.json(getPosts(page, sort, order, search)));
   }),
 ];

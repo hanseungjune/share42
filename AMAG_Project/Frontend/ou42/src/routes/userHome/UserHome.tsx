@@ -19,7 +19,6 @@ import DropDown from "../../components/UI/DropDown";
 import Loading from "../../components/Loading";
 import pinkBox from "../../assets/pinkBox.png";
 import { Data, Props } from "../../type/UserHome";
-import { UserHomeFetcher } from "../../components/user/UserHomeFetcher";
 import { useLikeMutation } from "../../hooks/useLikeMutation";
 import { useIntersectionObserver } from "../../hooks/useIntersectionObserver";
 
@@ -31,7 +30,6 @@ function UserHomeList(props: Partial<Props>) {
   const navigate = useNavigate();
 
   const { like } = useLikeMutation();
-
   const { observeElement } = useIntersectionObserver(
     fetchNextPage,
     hasNextPage

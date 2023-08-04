@@ -15,7 +15,7 @@ import { useEffect } from "react";
 function CommunityNavBar() {
   const { pathname } = useLocation();
   const [isClick, setClick] = useState<boolean>(true);
-  const { setSearch } = communityStore();
+  const { search, setSearch } = communityStore();
   const navigate = useNavigate();
   const { pathTitle, setPathTitle } = navStore();
 
@@ -35,10 +35,16 @@ function CommunityNavBar() {
   };
 
   useEffect(() => {
+    if (!isClick) {
+      setSearch("");
+    }
+  }, [isClick, setSearch]);
+
+  useEffect(() => {
     if (pathname === "/user/community/reg") {
       setPathTitle("게시글 등록하기");
     } else {
-      setPathTitle("")
+      setPathTitle("");
     }
   }, [pathname]);
 
@@ -51,16 +57,16 @@ function CommunityNavBar() {
             height: "12vh",
             marginBottom: "1rem",
             display: "flex",
-            position: 'fixed',
-            top: '0',
-            background: '#ffffff'
+            position: "fixed",
+            top: "0",
+            background: "#ffffff",
           }}
         >
           <div
             style={{
-              position:'absolute',
-              top: '25px',
-              left: '25px'
+              position: "absolute",
+              top: "25px",
+              left: "25px",
             }}
           >
             <MdArrowBackIosNew
@@ -80,7 +86,7 @@ function CommunityNavBar() {
                 alignItems: "start",
                 justifyContent: "flex-end",
                 marginRight: "4vw",
-                paddingTop: '2vh'
+                paddingTop: "2vh",
               }}
             >
               <BsSearch size={25} onClick={handleSearchBar} />
@@ -104,7 +110,7 @@ function CommunityNavBar() {
                 alignItems: "start",
                 justifyContent: "flex-end",
                 marginRight: "4vw",
-                paddingTop: '2vh'
+                paddingTop: "2vh",
               }}
             >
               <BsSearch size={25} onClick={handleSearchBar} />
@@ -116,6 +122,7 @@ function CommunityNavBar() {
                   transition: "all 1s",
                 }}
                 type="text"
+                value={search === '' ? ' ' : search}
                 onChange={handleSearchInfo}
                 onKeyDown={handleKeyDown}
               />

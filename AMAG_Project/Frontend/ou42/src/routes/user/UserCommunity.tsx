@@ -17,9 +17,10 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaRegComment } from "react-icons/fa";
 import { getTimeAgo } from "../../utils/getTimeAgo";
-import UserCommunityBtns from "../../components/community/UserCommunityBtns";
 import UserCommunityBottomBar from "../../components/community/UserCommunityBottomBar";
 import { UserCommunityBtnStyle } from "../../styles/user/UserCommunity";
+import communityStore from "../../store/communityStore";
+import useDebounce from "../../hooks/useDebounce";
 
 const sortArray = [
   { idx: 0, num: 0, title: "최신순", category: "recent" },
@@ -44,7 +45,7 @@ export type Post = {
 type SortCategories = "recent" | "popular" | "news" | "need" | "share";
 
 interface OrderState {
-  [key: string]: 'asc' | 'desc';
+  [key: string]: "asc" | "desc";
 }
 
 const HTTPS_URL = process.env.REACT_APP_API_MAIN_KEY;
@@ -62,6 +63,7 @@ const UserCommunity = () => {
     share: "asc",
   });
   const [activeSort, setActiveSort] = useState("");
+  const { search } = communityStore();
   const loader = useRef<HTMLDivElement>(null);
 
   const handleDetailNavigate = (id: number) => {
@@ -72,10 +74,18 @@ const UserCommunity = () => {
     if (!hasMore) return;
 
     const nextPage = page + 1;
-    const response = await axios.get(
-      `${HTTPS_URL}/posts?page=${page}&sort=${sort}&order=${order[sort]}`
-    );
-    console.log(`${HTTPS_URL}/posts?page=${page}&sort=${sort}&order=${order[sort]}`)
+    let response: any;
+
+    if (search) {
+      response = await axios.get(
+        `${HTTPS_URL}/posts?page=${page}&sort=${sort}&order=${order[sort]}&search=${search}`
+      );
+    } else {
+      response = await axios.get(
+        `${HTTPS_URL}/posts?page=${page}&sort=${sort}&order=${order[sort]}`
+      );
+    }
+    console.log(`${HTTPS_URL}/posts?page=${page}&sort=${sort}&order=${order[sort]}&search=${search}`)
     setPosts((prev) => [...prev, ...response.data]);
 
     if (response.data.length === 0) {
@@ -83,7 +93,7 @@ const UserCommunity = () => {
     } else {
       setPage(nextPage);
     }
-  }, [page, hasMore, sort, order]);
+  }, [page, hasMore, sort, order, search]);
 
   const handleObserver = useCallback(
     (entities: any) => {
@@ -97,7 +107,7 @@ const UserCommunity = () => {
 
   useEffect(() => {
     const observer = new IntersectionObserver(handleObserver, {
-      threshold: 0.9,
+      threshold: 0.5,
     });
     if (loader.current) {
       observer.observe(loader.current);
@@ -129,6 +139,16 @@ const UserCommunity = () => {
   function isSortCategory(category: string): category is SortCategories {
     return ["recent", "popular", "news", "need", "share"].includes(category);
   }
+
+  const debouncedSearchTerm = useDebounce(search, 500);
+
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      setPosts([]);
+      setPage(1);
+      setHasMore(true);
+    }
+  }, [debouncedSearchTerm]);
 
   return (
     <>
@@ -277,8 +297,8 @@ const UserCommunity = () => {
               key={idx}
               value={item.title}
               className={
-                item.category === activeSort 
-                  ? `sort-button-news active` 
+                item.category === activeSort
+                  ? `sort-button-news active`
                   : `sort-button-news`
               }
               onClick={() => {
@@ -292,7 +312,7 @@ const UserCommunity = () => {
           );
         })}
       </div>
-      <div ref={loader}>Loading...</div>
+      <div ref={loader} style={{ height: '10px'}}></div>
       <UserCommunityBottomBar />
     </>
   );
