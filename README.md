@@ -33,6 +33,13 @@
 
 <br/>
 
+## 수상 이력
+- SSAFY 특화프로젝트 우수 (삼성멀티캠퍼스)
+
+<img src="https://file.notion.so/f/s/4f28797f-d583-4459-b3f9-dcb0285c70a9/prize.jpg?id=590bbaf4-76b6-4470-93c2-c91a90ecadf7&table=block&spaceId=e6f818a6-de6c-4678-9bd5-0453b49aebcd&expirationTimestamp=1692511200000&signature=vRMOgLivR7_d-tK0oHchkGJfQH_oEZawJ-3oja7bHIs&downloadName=prize.jpg" alt="teukhwa" width="300"/>
+
+<br/>
+
 ## 프로젝트기간
 2023.04.10. ~ 2023.05.19. (6주)
 
